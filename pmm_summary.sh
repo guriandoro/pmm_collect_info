@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#echo `basename "$0"`
-#echo `pwd`
+### PMM-SERVER OUTPUTS COLLECTION ###
 
 mkdir pmm_server_collected 2>/dev/null
 cd pmm_server_collected
@@ -14,14 +13,13 @@ if [ $? -eq 0 ]
 then
   # Collect information from Docker outputs
 
-  ### DOCKER-SPECIFIC OUTPUTS ###
+  # Docker-specific outputs
   docker container inspect pmm-data > docker_inspect_pmm-data.txt
   docker container inspect pmm-server > docker_inspect_pmm-server.txt
   docker container logs pmm-data > docker_logs_pmm-data.txt
   docker container logs pmm-server > docker_logs_pmm-server.txt
   docker --version > docker_version.txt
   docker container ls -a > docker_ls-a.txt
-  ### DOCKER-SPECIFIC OUTPUTS ###
 
   docker container ls --filter name="^/pmm-server$" --filter status=running 2>/dev/null | grep pmm-server >/dev/null 2>&1
 
@@ -74,7 +72,27 @@ cd -
 tar czf "pmm_server_summary.tar.gz" pmm_server_collected/*
 
 
-#TODO: DO THE SAME WITH PMM client
+### PMM-CLIENT OUTPUTS COLLECTION ###
+
+mkdir pmm_client_collected 2>/dev/null
+cd pmm_client_collected
+
+pt-summary > pt-summary.txt
+
+#todo: add support for pt-mysql-summary pt-mongodb-summary ... etc
+
+netstat -punta > netstat_punta.txt
+pmm-admin check-network > pmm_admin-check-network.txt
+pmm-admin list > pmm_admin-list.txt
+ps aux | grep exporter > ps_aux_grep_exporter.txt
+systemctl status > systemctl_status.txt
+service --status-all > service_status.txt
+
+#todo: add support for QAN outputs needed
+
+# Get all pmm-client logs
+tar czf var_log_pmm.tar.gz /var/log/pmm-*
+
 
 exit 0
 
