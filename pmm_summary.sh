@@ -67,8 +67,8 @@ curl -s "http://${PMM_USER}${PMM_PASSWORD}${PMM_IP_ADDR}:${PMM_PORT}/v1/internal
 curl -s "http://${PMM_USER}${PMM_PASSWORD}${PMM_IP_ADDR}:${PMM_PORT}/qan-api/instances" > curl_qan.txt
 
 # Create .tar.gz file with outputs collected
-# We were in pmm_collected, so we go back to the parent directory
-cd -
+# We were in pmm_server_collected, so we go back to the parent directory
+cd ..
 tar czf "pmm_server_summary.tar.gz" pmm_server_collected/*
 
 
@@ -86,12 +86,21 @@ pmm-admin check-network > pmm_admin-check-network.txt
 pmm-admin list > pmm_admin-list.txt
 ps aux | grep exporter > ps_aux_grep_exporter.txt
 systemctl status > systemctl_status.txt
-service --status-all > service_status.txt
+service --status-all > service_status.txt 2>&1
 
 #todo: add support for QAN outputs needed
 
 # Get all pmm-client logs
 tar czf var_log_pmm.tar.gz /var/log/pmm-*
+
+# Create .tar.gz file with outputs collected
+# We were in pmm_client_collected, so we go back to the parent directory
+cd ..
+tar czf "pmm_client_summary.tar.gz" pmm_client_collected/*
+
+# Delete temporary directories created
+rm -rf pmm_server_collected
+rm -rf pmm_client_collected
 
 
 exit 0
