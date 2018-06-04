@@ -86,7 +86,7 @@ pt-summary --sleep=1 > pt-summary.txt
 netstat -punta > netstat_punta.txt
 pmm-admin check-network > pmm_admin-check-network.txt
 pmm-admin list > pmm_admin-list.txt
-ps aux | grep exporter > ps_aux_grep_exporter.txt
+ps aux | grep exporte[r] > ps_aux_grep_exporter.txt
 systemctl status > systemctl_status.txt
 service --status-all > service_status.txt 2>&1
 
