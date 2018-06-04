@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ### PMM-SERVER OUTPUTS COLLECTION ###
+echo "Gathering outputs from PMM server..."
 
 mkdir pmm_server_collected 2>/dev/null
 cd pmm_server_collected
@@ -51,7 +52,7 @@ else
 fi
 
 # Finally, collect outputs common to all deployments
-pt-summary > pt-summary.txt
+pt-summary --sleep=1 > pt-summary.txt
 
 # Get credentials and IP address/port for curl commands
 PMM_USER=`grep username *cat_etc-prometheus.txt | awk {'print $2'} | head -n1`
@@ -73,11 +74,12 @@ tar czf "pmm_server_summary.tar.gz" pmm_server_collected/*
 
 
 ### PMM-CLIENT OUTPUTS COLLECTION ###
+echo "Gathering outputs from PMM client..."
 
 mkdir pmm_client_collected 2>/dev/null
 cd pmm_client_collected
 
-pt-summary > pt-summary.txt
+pt-summary --sleep=1 > pt-summary.txt
 
 #todo: add support for pt-mysql-summary pt-mongodb-summary ... etc
 
