@@ -50,7 +50,7 @@ else
   #todo: only get supervisorctl?
   supervisorctl status > supervisorctl-status.txt
   # todo: change find command for something else, since it can be expensive
-  find / -name \*VERSION -exec echo {} \; -exec cat {} \; 2>/dev/null > find_version.txt
+ # find / -name \*VERSION -exec echo {} \; -exec cat {} \; 2>/dev/null > find_version.txt
   cat /etc/prometheus.yml > cat_etc-prometheus.txt
   cat /etc/supervisord.d/pmm.ini > cat_etc-supervisord-pmm.txt
   cat /etc/nginx/conf.d/pmm.conf > cat_etc-nginx-pmm.txt
@@ -66,7 +66,7 @@ pt-summary --sleep=1 > pt-summary.txt
 PMM_USER=`grep username *cat_etc-prometheus.txt | awk {'print $2'} | head -n1`
 PMM_PASSWORD=`grep password *cat_etc-prometheus.txt | awk {'print $2'} | head -n1`
 # to support the URL (for curl commands) where user and pass are empty
-if [ ${PMM_PASSWORD} != "" ]; then PMM_PASSWORD=":"${PMM_PASSWORD}"@"; fi
+if [ "${PMM_PASSWORD}" != "" ]; then PMM_PASSWORD=":"${PMM_PASSWORD}"@"; fi
 PMM_IP_ADDR='127.0.0.1'
 PMM_PORT=`grep listen *cat_etc-nginx-pmm.txt | awk {'print $2'} | tr -d ';' | head -n1`
 
