@@ -3,6 +3,13 @@
 ### PMM-SERVER OUTPUTS COLLECTION ###
 echo "Gathering outputs from PMM server..."
 
+if [ -d pmm_server_collected ]
+then
+  echo "ERROR: pmm_server_collected directory should not be created."
+  echo "Aborting execution."
+  exit 1
+fi
+
 mkdir pmm_server_collected 2>/dev/null
 cd pmm_server_collected
 
@@ -42,7 +49,8 @@ else
 
   #todo: only get supervisorctl?
   supervisorctl status > supervisorctl-status.txt
-  find / -name \*VERSION -exec echo {} \; -exec cat {} \; > find_version.txt
+  # todo: change find command for something else, since it can be expensive
+  find / -name \*VERSION -exec echo {} \; -exec cat {} \; 2>/dev/null > find_version.txt
   cat /etc/prometheus.yml > cat_etc-prometheus.txt
   cat /etc/supervisord.d/pmm.ini > cat_etc-supervisord-pmm.txt
   cat /etc/nginx/conf.d/pmm.conf > cat_etc-nginx-pmm.txt
@@ -62,7 +70,7 @@ if [ ${PMM_PASSWORD} != "" ]; then PMM_PASSWORD=":"${PMM_PASSWORD}"@"; fi
 PMM_IP_ADDR='127.0.0.1'
 PMM_PORT=`grep listen *cat_etc-nginx-pmm.txt | awk {'print $2'} | tr -d ';' | head -n1`
 
-# Get outputs from 
+# Get outputs from
 curl -s "http://${PMM_USER}${PMM_PASSWORD}${PMM_IP_ADDR}:${PMM_PORT}/prometheus/targets" > curl_prometheus.out
 curl -s "http://${PMM_USER}${PMM_PASSWORD}${PMM_IP_ADDR}:${PMM_PORT}/v1/internal/ui/nodes?dc=dc1" > curl_consul-metrics.txt
 curl -s "http://${PMM_USER}${PMM_PASSWORD}${PMM_IP_ADDR}:${PMM_PORT}/qan-api/instances" > curl_qan.txt
@@ -76,6 +84,16 @@ tar czf "pmm_server_summary.tar.gz" pmm_server_collected/*
 ### PMM-CLIENT OUTPUTS COLLECTION ###
 echo "Gathering outputs from PMM client..."
 
+if [ -d pmm_client_collected ]
+then
+  echo "ERROR: pmm_client_collected directory should not be created."
+  echo "Aborting execution."
+  # We remove the directory that we created before, so next executions
+  # don't fail because of that check
+  rm -rf pmm_server_collected
+  exit 1
+fi
+
 mkdir pmm_client_collected 2>/dev/null
 cd pmm_client_collected
 
@@ -83,17 +101,20 @@ pt-summary --sleep=1 > pt-summary.txt
 
 #todo: add support for pt-mysql-summary pt-mongodb-summary ... etc
 
-netstat -punta > netstat_punta.txt
-pmm-admin check-network > pmm_admin-check-network.txt
-pmm-admin list > pmm_admin-list.txt
-ps aux | grep exporte[r] > ps_aux_grep_exporter.txt
-systemctl status > systemctl_status.txt
-service --status-all > service_status.txt 2>&1
+which netstat && netstat -punta > netstat_punta.txt
+which pmm-admin && pmm-admin check-network > pmm_admin-check-network.txt
+which pmm-admin && pmm-admin list > pmm_admin-list.txt
+which ps && ps aux | grep exporte[r] > ps_aux_grep_exporter.txt
+which systemctl && systemctl status > systemctl_status.txt
+which service && service --status-all > service_status.txt 2>&1
 
 #todo: add support for QAN outputs needed
 
 # Get all pmm-client logs
-tar czf var_log_pmm.tar.gz /var/log/pmm-*
+if [ -f /var/log/pmm-* ]
+then
+  tar czf var_log_pmm.tar.gz /var/log/pmm-*
+fi
 
 # Create .tar.gz file with outputs collected
 # We were in pmm_client_collected, so we go back to the parent directory
@@ -106,4 +127,3 @@ rm -rf pmm_client_collected
 
 
 exit 0
-
